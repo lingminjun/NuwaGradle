@@ -59,6 +59,7 @@ class NuwaProcessor {
                 jarOutputStream.putNextEntry(zipEntry);
 
                 if (shouldProcessClassInJar(entryName, includePackage, excludeClass)) {
+//                    System.out.println("hack:"+entryName);
                     def bytes = referHackWhenInit(inputStream);
                     jarOutputStream.write(bytes);
 
@@ -69,6 +70,7 @@ class NuwaProcessor {
                         NuwaFileUtils.copyBytesToFile(bytes, NuwaFileUtils.touchFile(patchDir, entryName))
                     }
                 } else {
+                    System.out.println("nhack:"+entryName);
                     jarOutputStream.write(IOUtils.toByteArray(inputStream));
                 }
                 jarOutputStream.closeEntry();
@@ -86,6 +88,7 @@ class NuwaProcessor {
 
     //refer hack class when object init
     private static byte[] referHackWhenInit(InputStream inputStream) {
+        /*
         ClassReader cr = new ClassReader(inputStream);
         ClassWriter cw = new ClassWriter(cr, 0);
         ClassVisitor cv = new ClassVisitor(Opcodes.ASM4, cw) {
@@ -109,7 +112,48 @@ class NuwaProcessor {
         };
         cr.accept(cv, 0);
         return cw.toByteArray();
+        */
+        return referHackWhenInitV2(inputStream);
     }
+
+
+    private static byte[] referHackWhenInitV2(InputStream inputStream) {
+        ClassReader cr = new ClassReader(inputStream);
+        ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS);
+        ClassVisitor cv = new ClassVisitor(Opcodes.ASM5, cw){};
+        cr.accept(cv, Opcodes.ASM5);
+
+        MethodVisitor mv= cw.visitMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC,
+                "__nuwa_hack",
+                "()V",
+                null,
+                null);
+        /*
+        mv.visitLdcInsn(Type.getType("Lcn/jiajixin/nuwa/Hack;"));//Class var = Hack.class;
+        */
+        //public static void __nuwa_hack() { System.out.println(Hack.class); }
+        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+        mv.visitLdcInsn(Type.getType("Lcn/jiajixin/nuwa/Hack;"));
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
+
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+
+
+        return cw.toByteArray();
+    }
+
+//    private
+//    static byte[] referHackByJavassistWhenInit(InputStream inputStream) {
+//        ClassPool classPool = ClassPool.getDefault();
+//        CtClass clazz = classPool.makeClass(inputStream)
+//        CtConstructor ctConstructor = clazz.makeClassInitializer()
+//        ctConstructor.insertAfter("if(Boolean.FALSE.booleanValue()){System.out.println(cn.jiajixin.nuwa.Hack.class);}")
+//        def bytes = clazz.toBytecode()
+//        clazz.defrost()
+//        return bytes
+//    }
 
     public static boolean shouldProcessPreDexJar(String path) {
         return path.endsWith("classes.jar") && !path.contains("com.android.support") && !path.contains("/android/m2repository");
@@ -117,7 +161,7 @@ class NuwaProcessor {
 
     private
     static boolean shouldProcessClassInJar(String entryName, HashSet<String> includePackage, HashSet<String> excludeClass) {
-        return entryName.endsWith(".class") && !entryName.startsWith("cn/jiajixin/nuwa/") && NuwaSetUtils.isIncluded(entryName, includePackage) && !NuwaSetUtils.isExcluded(entryName, excludeClass) && !entryName.contains("android/support/")
+        return entryName.endsWith(".class") && !entryName.contains("/R.class") && !entryName.contains("/R\$") && !entryName.startsWith("cn/jiajixin/nuwa/") && NuwaSetUtils.isIncluded(entryName, includePackage) && !NuwaSetUtils.isExcluded(entryName, excludeClass) && !entryName.contains("android/support/")
     }
 
     public static byte[] processClass(File file) {

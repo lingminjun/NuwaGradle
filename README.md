@@ -3,7 +3,7 @@
 
 ###新的特性：
 1、支持gradle2.0以上版，1.5以下版本也兼容<br/>
-2、使用Android Studio2.x版本直接打包或者调试时不支持patch，因为Android Studio默认会开启Instant Run，导致无法patch所有class<br/>
+2、使用Android Studio2.x版本直接打包或者调试时不支持patch，因为Android Studio默认会开启Instant Run，导致无法patch所有class。(简单的解决办法：每次执行gradle脚本打包前请删除you_app_module/build目录)<br/>
 
 ###如何使用：
 1、下载源码NuwaGradle源码，用Android Studio打开<br/>

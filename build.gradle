@@ -16,6 +16,7 @@ dependencies {
     compile gradleApi()
     compile "commons-io:commons-io:1.4"
     compile 'commons-codec:commons-codec:1.6'
+//    compile 'javassist:javassist:3.9.0.ga@jar'
 }
 
 apply plugin: 'maven-publish'
