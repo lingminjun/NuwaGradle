@@ -64,6 +64,7 @@ class NuwaPlugin implements Plugin<Project> {
                     //查看此时是否跑的Android Studio环境instant-run
                     if (processManifestTaskName.toLowerCase().contains("instantrun") || processManifestTaskName.toLowerCase().contains("instant-run") || manifestFile == null || manifestFile.absolutePath.toLowerCase().contains("instant-run")) {
                         System.out.println("当前为Android Studio环境，其开启了Instant Run功能（gradle 2.0以上支持，Android Studio2.x无法完全关闭此功能），故不支持nuwa patch！请使用gradle脚本build apk!");
+                        System.out.println("若当前不是Android Studio环境，请删除you_app_module/build目标，然后重新跑你的assemble task!!!");
                         if (manifestFile != null) {
                             System.out.println("找到manifestFile:${manifestFile.absolutePath}");
                         }

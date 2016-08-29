@@ -62,6 +62,7 @@ class NuwaProcessor {
 //                    System.out.println("hack:"+entryName);
                     def bytes = referHackWhenInit(inputStream);
                     jarOutputStream.write(bytes);
+//                    System.out.println("b=====================\n"+new String(bytes)+"\nn=====================");
 
                     def hash = DigestUtils.shaHex(bytes)
                     hashFile.append(NuwaMapUtils.format(entryName, hash))
@@ -70,7 +71,7 @@ class NuwaProcessor {
                         NuwaFileUtils.copyBytesToFile(bytes, NuwaFileUtils.touchFile(patchDir, entryName))
                     }
                 } else {
-                    System.out.println("nhack:"+entryName);
+//                    System.out.println("nhack:"+entryName);
                     jarOutputStream.write(IOUtils.toByteArray(inputStream));
                 }
                 jarOutputStream.closeEntry();
@@ -128,32 +129,25 @@ class NuwaProcessor {
                 "()V",
                 null,
                 null);
+
         /*
+        mv.visitCode();
         mv.visitLdcInsn(Type.getType("Lcn/jiajixin/nuwa/Hack;"));//Class var = Hack.class;
+        mv.visitVarInsn(Opcodes.ASTORE, 1);
         */
+
         //public static void __nuwa_hack() { System.out.println(Hack.class); }
         mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
         mv.visitLdcInsn(Type.getType("Lcn/jiajixin/nuwa/Hack;"));
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/Object;)V", false);
 
         mv.visitInsn(Opcodes.RETURN);
-        mv.visitMaxs(0, 0);
+        mv.visitMaxs(2, 2);
         mv.visitEnd();
 
 
         return cw.toByteArray();
     }
-
-//    private
-//    static byte[] referHackByJavassistWhenInit(InputStream inputStream) {
-//        ClassPool classPool = ClassPool.getDefault();
-//        CtClass clazz = classPool.makeClass(inputStream)
-//        CtConstructor ctConstructor = clazz.makeClassInitializer()
-//        ctConstructor.insertAfter("if(Boolean.FALSE.booleanValue()){System.out.println(cn.jiajixin.nuwa.Hack.class);}")
-//        def bytes = clazz.toBytecode()
-//        clazz.defrost()
-//        return bytes
-//    }
 
     public static boolean shouldProcessPreDexJar(String path) {
         return path.endsWith("classes.jar") && !path.contains("com.android.support") && !path.contains("/android/m2repository");
