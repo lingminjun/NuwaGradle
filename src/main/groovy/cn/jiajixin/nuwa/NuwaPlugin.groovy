@@ -5,6 +5,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import java.io.File
 
 class NuwaPlugin implements Plugin<Project> {
     HashSet<String> includePackage
@@ -20,6 +21,27 @@ class NuwaPlugin implements Plugin<Project> {
 
     private static final String DEBUG = "debug"
 
+    def poutFile(out) {
+        if (out != null) {
+            try    {
+                System.out.println("out>>"+out);
+                System.out.println("========begin file==========");
+
+                def File file = new File(out);
+                def FileInputStream s = new FileInputStream(file);
+                def byte[] bytes = new byte[1024];
+                def int ln = 0;
+                while ((ln = s.read(bytes)) > 0) {
+                    System.out.print(new String(bytes,0,ln));
+                }
+                System.out.println("");
+                System.out.println("=========end file===========");
+
+            }catch(Exception e)    {
+                System.out.println(e);
+            }
+        }
+    }
 
     @Override
     void apply(Project project) {
@@ -59,17 +81,28 @@ class NuwaPlugin implements Plugin<Project> {
 
                     def processManifestTaskName = "process${variant.name.capitalize()}Manifest";
                     def processManifestTask = project.tasks.findByName(processManifestTaskName)
-                    def manifestFile = processManifestTask.outputs.files.files[0]
+                    def manifestFile1 = processManifestTask.outputs.files.files[0];
+                    def manifestFile = variant.outputs.processManifest.manifestOutputFile[0]
 
                     //查看此时是否跑的Android Studio环境instant-run
-                    if (processManifestTaskName.toLowerCase().contains("instantrun") || processManifestTaskName.toLowerCase().contains("instant-run") || manifestFile == null || manifestFile.absolutePath.toLowerCase().contains("instant-run")) {
-                        System.out.println("当前为Android Studio环境，其开启了Instant Run功能（gradle 2.0以上支持，Android Studio2.x无法完全关闭此功能），故不支持nuwa patch！请使用gradle脚本build apk!");
-                        System.out.println("若当前不是Android Studio环境，请删除you_app_module/build目标，然后重新跑你的assemble task!!!");
-                        if (manifestFile != null) {
-                            System.out.println("找到manifestFile:${manifestFile.absolutePath}");
-                        }
+                    if (manifestFile == null) {
+                        System.out.println("找不到ManifestTask，停止nuwa hack!");
                         return ;
+                    } else if (processManifestTaskName.toLowerCase().contains("instantrun") || processManifestTaskName.toLowerCase().contains("instant-run")) {
+                        System.out.println("开启instant run，无法有效执行nuwa hack1! " + processManifestTaskName);
+//                        return ;
+                    } else if (manifestFile.absolutePath.toLowerCase().contains("instant-run")) {
+                        System.out.println("开启instant run，无法有效执行nuwa hack2!! " + manifestFile.absolutePath);
+//                        return ;
+                    } else if (manifestFile1.absolutePath.toLowerCase().contains("instant-run")) {
+                        System.out.println("instant run - manifest " + manifestFile1.absolutePath);
                     }
+
+                    if (!manifestFile.equals(manifestFile1)) {
+                        poutFile(manifestFile);
+                        poutFile(manifestFile1);
+                    }
+
                     def oldNuwaDir = NuwaFileUtils.getFileFromProperty(project, NUWA_DIR)
                     if (oldNuwaDir) {
                         def mappingFile = NuwaFileUtils.getVariantFile(oldNuwaDir, variant, MAPPING_TXT)
@@ -189,7 +222,7 @@ class NuwaPlugin implements Plugin<Project> {
                             inputFiles.each { inputFile ->
                                 def path = inputFile.absolutePath
                                 System.out.println("check:${path}");//check:/Users/lingminjun/work/work_code/plugin_work/Nuwa/sample/build/intermediates/transforms/proguard/qihoo/debug
-                                if (!path.contains("com.android.") && !path.contains("com/android/") && !path.contains("/android/m2repository") && !path.contains("/instant-run")) {
+                                if (!path.contains("com.android.") && !path.contains("com/android/") && !path.contains("/android/m2repository")) {
                                     if (path.endsWith(".jar")) {
                                         NuwaProcessor.processJar(hashFile, inputFile, patchDir, hashMap, includePackage, excludeClass)
                                     } else if (inputFile.isDirectory()) {//是目录，重复此方法
