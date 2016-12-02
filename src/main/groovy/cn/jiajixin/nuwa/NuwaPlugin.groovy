@@ -5,7 +5,6 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import java.io.File
 
 class NuwaPlugin implements Plugin<Project> {
     HashSet<String> includePackage
@@ -23,23 +22,7 @@ class NuwaPlugin implements Plugin<Project> {
 
     def poutFile(out) {
         if (out != null) {
-            try    {
-                System.out.println("out>>"+out);
-                System.out.println("========begin file==========");
-
-                def File file = new File(out);
-                def FileInputStream s = new FileInputStream(file);
-                def byte[] bytes = new byte[1024];
-                def int ln = 0;
-                while ((ln = s.read(bytes)) > 0) {
-                    System.out.print(new String(bytes,0,ln));
-                }
-                System.out.println("");
-                System.out.println("=========end file===========");
-
-            }catch(Exception e)    {
-                System.out.println(e);
-            }
+            println new File(out).text
         }
     }
 
