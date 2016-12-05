@@ -22,7 +22,10 @@ class NuwaPlugin implements Plugin<Project> {
 
     def poutFile(out) {
         if (out != null) {
+            println "===================begin==================="
+            println out
             println new File(out).text
+            println "====================end===================="
         }
     }
 
@@ -82,8 +85,13 @@ class NuwaPlugin implements Plugin<Project> {
                     }
 
                     if (manifestFile != null && !manifestFile.absolutePath.equals(manifestFile1.absolutePath)) {
-                        poutFile(manifestFile.absolutePath);
-                        poutFile(manifestFile1.absolutePath);
+                        if (manifestFile.exists()) {
+                            poutFile(manifestFile.absolutePath);
+                        }
+
+                        if (manifestFile1.exists()) {
+                            poutFile(manifestFile1.absolutePath);
+                        }
                     }
 
                     def oldNuwaDir = NuwaFileUtils.getFileFromProperty(project, NUWA_DIR)

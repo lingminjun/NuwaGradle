@@ -4,7 +4,7 @@ plugins {
 apply plugin: 'maven-publish'
 apply plugin: 'groovy'
 
-def versionName = "1.4.0"
+def versionName = "1.4.1"
 group "cn.jiajixin.nuwa"
 version versionName
 
