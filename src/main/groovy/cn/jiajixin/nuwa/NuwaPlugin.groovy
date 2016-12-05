@@ -5,7 +5,6 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import java.io.File
 
 class NuwaPlugin implements Plugin<Project> {
     HashSet<String> includePackage
@@ -82,9 +81,9 @@ class NuwaPlugin implements Plugin<Project> {
                         System.out.println("instant run - manifest " + manifestFile1.absolutePath);
                     }
 
-                    if (!manifestFile.equals(manifestFile1)) {
-                        poutFile(manifestFile);
-                        poutFile(manifestFile1);
+                    if (manifestFile != null && !manifestFile.absolutePath.equals(manifestFile1.absolutePath)) {
+                        poutFile(manifestFile.absolutePath);
+                        poutFile(manifestFile1.absolutePath);
                     }
 
                     def oldNuwaDir = NuwaFileUtils.getFileFromProperty(project, NUWA_DIR)
