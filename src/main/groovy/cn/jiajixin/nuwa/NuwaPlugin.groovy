@@ -5,6 +5,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import java.io.File
 
 class NuwaPlugin implements Plugin<Project> {
     HashSet<String> includePackage
